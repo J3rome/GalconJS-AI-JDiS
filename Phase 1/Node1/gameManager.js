@@ -2,6 +2,16 @@ var _ = require("underscore");
 var teamName;
 var theGame;
 
+// Average speed of Ships : 0.0017708072818430304 dist/ms
+
+// Testing
+var attacked;
+var count =0;
+var attackTime;
+
+var t = 0.0015308232561668347 + 0.0018389404174685405 + 0.002015802125211825 + 0.001635774815079226 + 0.0018326957952887267;
+console.log("Moyenne "+t/5);
+
 module.exports = gameManager = {
     init: function(gameObject, myName) {
         teamName = myName;
@@ -14,10 +24,29 @@ module.exports = gameManager = {
         }
     },
 
+    test: function(parsedGame){
+        if(count == 0){
+            attacked = parsedGame.neutralPlanets[0];
+            attackTime = Date.now();
+            this.attack(parsedGame.myPlanets[0].id, attacked.id, 1);
+            count++;
+        }else if(count ==1){
+            var planet = _.findWhere(parsedGame.neutralPlanets, {id:attacked.id});
+
+            if(planet.ship_count < attacked.ship_count){
+                var time = Date.now() - attackTime;
+                var distance = calcDist(parsedGame.myPlanets[0].position,attacked.position);
+                console.log("Took "+time+" ms for distance : "+distance+" Speed : "+distance/time);
+                count++;
+            }
+        }
+    },
+
     attackStrategy: function(parsedGame){
         var shipsCount = 1;
         console.log("Attacking '"+parsedGame.enemiesPlanets[0].owner+"' from '"+parsedGame.myPlanets[0].owner+"' with '"+shipsCount+"'.");
         this.attack(parsedGame.myPlanets[0].id, parsedGame.enemiesPlanets[0].id, shipsCount);
+        this.attack(parsedGame.myPlanets[0].id, parsedGame.neutralPlanets[0].id, shipsCount);
     },
 
     parseGameObject: function (updatedGame) {
@@ -94,3 +123,11 @@ module.exports = gameManager = {
         return parsedGame;
     }
 };
+
+function calcDist(pos1,pos2)
+{
+    var x = pos1.x - pos2.x;
+    var y = pos1.y - pos2.y;
+
+    return Math.sqrt((y*y)+(x*x));
+}
