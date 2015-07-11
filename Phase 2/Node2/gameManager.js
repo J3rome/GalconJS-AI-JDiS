@@ -1,16 +1,13 @@
 var _ = require("underscore");
 var teamName;
 var theGame;
+var gameManager;
 
 // Average speed of Ships : 0.0017708072818430304 dist/ms
 
 var updateCount = 0;
 
-var minimalRayon = 5;
-
 var phase = 0;
-
-var lastAttacked;
 
 module.exports = gameManager = {
     init: function(gameObject, myName) {
@@ -26,7 +23,13 @@ module.exports = gameManager = {
 
     attackStrategy: function(parsedGame){
 
+        var toAttack;
+
         parsedGame.neutralPlanets = setCostForNeutralPlanets(parsedGame.neutralPlanets);
+
+        addDistanceToDeathStar(parsedGame.allPlanets, parsedGame.myPlanets);
+
+        console.log(parsedGame.myPlanets);
 
         if(phase == 0){
             console.log("Phase 0");
@@ -34,14 +37,10 @@ module.exports = gameManager = {
 
             var planetByDistance = sortPlanetsByDistanceToPos(parsedGame.neutralPlanets, current.position);
 
-            var toAttack = getFisrtNlowestCost(planetByDistance, 2);
+            toAttack = getFisrtNlowestCost(planetByDistance, 2);
 
             if(parsedGame.myPlanets.length < 2){
                 //calcDist(planetByDistance[0].position, current.position) < minimalRayon){
-
-
-
-                lastAttacked = planetByDistance[0];
                 _.each(toAttack, function(attackIt){
                     gameManager.attack(current.id, attackIt.id, attackIt.ship_count + 5);
                 });
@@ -54,7 +53,24 @@ module.exports = gameManager = {
             var current = ourStrongestPlanet(parsedGame.myPlanets);
             var planets = weakestPlanet(parsedGame.enemiesPlanets, current);
             var shipCount = current.ship_count/2;
-            gameManager.attack(current.id, planets.id,shipCount );
+            gameManager.attack(current.id, planets.id,shipCount);
+
+            // Get DeathStar infos
+
+            // Get infos if someone is attacking us
+            var defendInfos = isAttackingMe(parsedGame.enemiesPlanets, parsedGame.allPlanets);
+            if(defendInfos.length > 0){
+                // Someone is attacking us, decide weither we defend or we attack the enemie
+                toAttack = defendOrAttack(parsedGame.enemiesPlanets, getById(parsedGame.myPlanets, defendInfos.planetId), defendInfos.shipsNeededToDefend);
+            }else{
+                // Nobody Attacking, we choose the best target to attack
+                
+
+
+            }
+
+            console.log("TO ATTACK");
+            console.log(toAttack);
         }
 
         updateCount++;
@@ -216,24 +232,19 @@ function shipsLeftAfterEnnemyAttack(ships,allPlanets)
 }
 
 
-function isAttackingMe(enemyShipsArray,allPlanets,teamName)
+function isAttackingMe(enemyShipsArray,allPlanets)
 {
     var ennemyShipsAttackingUs = [];
     _.each(enemyShipsArray,function(enemyShips){
-        console.log("Ships:");
-        console.log(enemyShips);
-        var attackingPlanet = _.findWhere(allPlanets,{id:enemyShips.target});
-        console.log("Target:");
-        console.log(attackingPlanet);
-        console.log("teamname:"+teamName);
-        if(attackingPlanet.owner == teamName )
+        var attackedPlanet = _.findWhere(allPlanets,{id:enemyShips.target});
+        if(attackedPlanet && attackedPlanet.owner == teamName )
         {
-            console.log("WARNINGG");
-            var dist = calcDist(enemyShips.position,attackingPlanet.position);
-            var minShipsToDefend = attackingPlanet.ship_count - enemyShips.ship_count + 1;
+            console.log("We are being attacked");
+            var dist = calcDist(enemyShips.position,attackedPlanet.position);
+            var minShipsToDefend = attackedPlanet.ship_count - enemyShips.ship_count + 1;
             var attack = {
                 shipsId: enemyShips.id,
-                planetId: attackingPlanet.id,
+                planetId: attackedPlanet.id,
                 distance: dist,
                 updatesBeforeArrival: estimatedTurnsBeforeShipsArrive(dist),
                 shipsNeededToDefend: minShipsToDefend
@@ -241,7 +252,7 @@ function isAttackingMe(enemyShipsArray,allPlanets,teamName)
             ennemyShipsAttackingUs.push(attack);
         }
         else{
-            console.log("OUFF");
+            console.log("Nobody Attacking");
         }
     })
     return ennemyShipsAttackingUs;
@@ -263,4 +274,30 @@ function addDistanceToDeathStar(list,deathStar)
     _.each(list,function(planet){
         planet.distanceToDeathStar = calcDist(deathStar.position,planet.position);
     });
+}
+
+function defendOrAttack(enemiesPlanets, planetToDefend, defendCost){
+    var toAttack = planetToDefend;
+    _.each(enemiesPlanets, function(enemiePlanet){
+        if(enemiePlanet.ship_count < defendCost && enemiePlanet.ship_count < toAttack.ship_count){
+            toAttack =  enemiePlanet;
+        }
+    });
+
+    return toAttack;
+}
+
+function findDeathStar(list)
+{
+    return _.findWhere(list,{is_deathstar:true});
+}
+
+function addDistanceToDeathStar(allPlanet, myPlanets)
+{
+    var deathStar = findDeathStar(allPlanet);
+    _.each(myPlanets,function(planet){
+        planet.distanceToDeathStar = calcDist(deathStar.position,planet.position);
+    });
+
+    return myPlanets;
 }
