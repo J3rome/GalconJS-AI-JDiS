@@ -308,3 +308,38 @@ function findEnnemysToAttack(shipsToSpend,enemyShips)
 
     return attackStrategy;
 }
+
+function expandStrategie(planetsToAttackWith,neutralPlanets)
+{
+    var strategies = [];
+	_.each(neutralPlanets,function(neutral){
+        strategies.push(findClosestToNeutral(neutral,planetsToAttackWith));
+	});
+
+    var bestStrat = _.sortBy(strategies,function(s){return s.ship_count;});
+
+    return bestStrat[0];
+}
+
+function findClosestToNeutral(neutralPlanet,planetsToAttackWith)
+{
+	var distance=9999;
+    var closestPlanet;
+    _.each(planetsToAttackWith,function(planet){
+        var tmp = calcDist(neutralPlanet.position,planet.position);
+        if( tmp < distance)
+        {
+            distance =tmp;
+            closestPlanet = planet;
+        }
+    });
+
+    var strategy = {
+        neutralPlanet : neutralPlanet,
+        ourPlanet : closestPlanet,
+        distance : distance,
+        neededShips:neutralPlanet.ship_count
+
+    };
+    return strategy;
+}
