@@ -4,14 +4,6 @@ var theGame;
 
 // Average speed of Ships : 0.0017708072818430304 dist/ms
 
-// Testing
-var attacked;
-var count =0;
-var attackTime;
-
-var t = 0.0015308232561668347 + 0.0018389404174685405 + 0.002015802125211825 + 0.001635774815079226 + 0.0018326957952887267;
-console.log("Moyenne "+t/5);
-
 module.exports = gameManager = {
     init: function(gameObject, myName) {
         teamName = myName;
@@ -21,24 +13,6 @@ module.exports = gameManager = {
     attack: function(from, to, count){
         if(from && to && count) {
             theGame.attack_planet(from, to, count);
-        }
-    },
-
-    test: function(parsedGame){
-        if(count == 0){
-            attacked = parsedGame.neutralPlanets[0];
-            attackTime = Date.now();
-            this.attack(parsedGame.myPlanets[0].id, attacked.id, 1);
-            count++;
-        }else if(count ==1){
-            var planet = _.findWhere(parsedGame.neutralPlanets, {id:attacked.id});
-
-            if(planet.ship_count < attacked.ship_count){
-                var time = Date.now() - attackTime;
-                var distance = calcDist(parsedGame.myPlanets[0].position,attacked.position);
-                console.log("Took "+time+" ms for distance : "+distance+" Speed : "+distance/time);
-                count++;
-            }
         }
     },
 

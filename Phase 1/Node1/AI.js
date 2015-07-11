@@ -11,8 +11,7 @@ var set_game = function (obj) {
 
 var update = function (game_objects) {
     parsedGame = gameManager.parseGameObject(game_objects);
-    //gameManager.attackStrategy(parsedGame);
-    gameManager.test(parsedGame);
+    gameManager.attackStrategy(parsedGame);
 };
 
 var set_name = function () {
