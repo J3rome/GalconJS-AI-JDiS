@@ -6,8 +6,8 @@ var gameManager;
 var minimalToAttack = 10;
 
 var nbPlanetAttackRatio = 0.5;
-var attackRatio = 1/6;
-var expandRatio = 3/6;
+var attackRatio = 2/6;
+var expandRatio = 2/6;
 var deathstarRatio = 1/6;
 var nbShipToAttack;
 var nbShipForDeathstar;
@@ -46,8 +46,6 @@ module.exports = gameManager = {
            myTotalShips += planet.ship_count;
         });
 
-        console.log()
-
         nbOfOurPlanetAttacking = parseInt((parsedGame.myPlanets.length * nbPlanetAttackRatio)+0.5);
 
         if(nbOfOurPlanetAttacking == 0)
@@ -62,7 +60,6 @@ module.exports = gameManager = {
         addDistanceToDeathStar(parsedGame.allPlanets, parsedGame.myPlanets);
 
         if(phase == 0){
-            console.log("Phase 0");
             var current = ourStrongestPlanet(parsedGame.myPlanets);
 
             var planetByDistance = sortPlanetsByDistanceToPos(parsedGame.neutralPlanets, current.position);
@@ -75,10 +72,8 @@ module.exports = gameManager = {
                     gameManager.attack(current.id, attackIt.id, attackIt.ship_count + 5);
                 });
                 phase++;
-            }/*else if(parsedGame.myPlanets.length == 3){
-                console.log("++phase");
-                phase++;
-            }*/
+            }
+
         }else if(phase == 1){
             console.log("Phase 1");
             //var current = ourStrongestPlanet(parsedGame.myPlanets);
@@ -404,7 +399,7 @@ function addDistanceToDeathStar(allPlanet, myPlanets)
 
 function bestNplanetsToAttackWith(planets,N, minimumNumberOfShipsToAttack)
 {
-    var planetsWithEnoughShips = _.reject(planets,function(planet){return planet.ship_count < minimumNumberOfShipsToAttack && !planet.is_deathstar});
+    var planetsWithEnoughShips = _.reject(planets,function(planet){return planet.ship_count < minimumNumberOfShipsToAttack && planet.is_deathstar});
 
     if(planetsWithEnoughShips)
     {
