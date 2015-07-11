@@ -82,7 +82,14 @@ module.exports = gameManager = {
             //gameManager.attack(current.id, planets.id,shipCount);
 
             handleDeathStar(parsedGame);
-            expandStrategie(parsedGame.myPlanets, parsedGame.neutralPlanets, nbShipToExpand);
+
+            // Expanding
+            var toExpand = expandStrategie(parsedGame.myPlanets, parsedGame.neutralPlanets, nbShipToExpand);
+            console.log("DLDLD");
+            console.log(toExpand);
+            console.log("----");
+                gameManager.attack(toExpand.ourPlanet.id, toExpand.neutralPlanet.id, toExpand.neededShips);
+
 
             // Get DeathStar infos
 
@@ -486,16 +493,22 @@ function getEnemyStrongestPlanet(enemyPlanets)
     return _.max(enemyPlanets,function(planet){ return planet.ship_count});         // FIX PHASE 3
 }
 
-function expandStrategie(planetsToAttackWith,neutralPlanets)
+function expandStrategie(planetsToAttackWith,neutralPlanets,shipsToSend)
 {
+    console.log("Expanding");
     var strategies = [];
     _.each(neutralPlanets,function(neutral){
         strategies.push(findClosestToNeutral(neutral,planetsToAttackWith));
     });
 
     var bestStrat = _.sortBy(strategies,function(s){return s.ship_count;});
+    var i = 0;
+    while(i< bestStrat.length && bestStrat[i].neededShips > shipsToSend)
+    {
+        i++;
+    }
 
-    return bestStrat[0];
+    return bestStrat[i];
 }
 
 function findClosestToNeutral(neutralPlanet,planetsToAttackWith)
@@ -515,7 +528,8 @@ function findClosestToNeutral(neutralPlanet,planetsToAttackWith)
         neutralPlanet : neutralPlanet,
         ourPlanet : closestPlanet,
         distance : distance,
-        neededShips:neutralPlanet.ship_count + 3
+        neededShips:neutralPlanet.ship_count+4
+
     };
     return strategy;
 }
