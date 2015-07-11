@@ -11,6 +11,17 @@ console.log("distance: "+dist);
 var percentage = percentageToSend(20,5);
 console.log("Ships to send:" + percentage + " %");
 
+var planet1 = {id:1, position: {x: 5,y :5}};
+var planet2 = {id:2, position: {x: 7,y : 7}};
+var planet3 = {id:3, position: {x: 2,y :2}};
+var planet4 = {id:4, position: {x: 3,y : 3}};
+
+var planets = [planet1,planet2,planet3,planet4];
+
+var nearestId = nearestPlanetToPosition(planets,p1);
+
+console.log('nearest planet id:'+ nearestId.id);
+
 function calcDist(pos1,pos2)
 {
 	var x = pos1.x - pos2.x;
@@ -31,5 +42,16 @@ function percentageToSend(planetShips,ShipsToSend)
 
 function nearestPlanetToPosition(planets,pos)
 {
-	
+	var closestPlanet;
+	var closestPlanetDistance = 999999;
+
+	_.each(planets,function(planet) {
+		var distance = calcDist(planet.position, pos);
+		if (distance < closestPlanetDistance)
+		{
+			closestPlanet = planet;
+			closestPlanetDistance = distance;
+		}
+	});
+	return closestPlanet;
 }
