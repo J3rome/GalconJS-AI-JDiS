@@ -26,6 +26,10 @@ var strongestPlanet = ourStrongestPlanet(planets);
 
 console.log("Our strongest planet is: "+strongestPlanet.id+" with "+ strongestPlanet.ship_count+ " ships");
 
+
+console.log("planets sorted by distance to (1,1):");
+console.log(sortPlanetsByDistanceToPos(planets,p1));
+
 function calcDist(pos1,pos2)
 {
 	var x = pos1.x - pos2.x;
@@ -65,8 +69,28 @@ function ourStrongestPlanet(ourPlanets)
 	return _.max(ourPlanets,function(planet){ return planet.ship_count});
 }
 
-function weakestPlanet(planets)
+function weakestPlanet(planets,ourStrongestPlanet)
 {
 
+	//En premier on sort les plannetes pour avoir les plus proches en premier
+	var closestPlanets = sortPlanetsByDistanceToPos(planets,ourStrongestPlanet.position);
+
+	//des trois premiers, on va prendre celui qui a le moins de ships:
+	var weakPlanet;
+	var weakPlanetShips = 9999;
+	for(var i=0;i<3;i++)
+	{
+		if(closestPlanets[i].ship_count < weakPlanetShips)
+		{
+			weakPlanet = closestPlanets[i];
+			weakPlanetShips = weakPlanet.ship_count;
+		}
+	}
+	return weakPlanet;
+}
+
+function sortPlanetsByDistanceToPos(planets,pos)
+{
+	return _.sortBy(planets,function(planet){return calcDist(planet.position,pos)});
 }
 
