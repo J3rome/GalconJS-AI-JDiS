@@ -316,7 +316,7 @@ function expandStrategie(planetsToAttackWith,neutralPlanets,shipsToSend)
         strategies.push(findClosestToNeutral(neutral,planetsToAttackWith));
 	});
 
-    var bestStrat = _.sortBy(strategies,function(s){return s.ship_count;});
+    var bestStrat = _.sortBy(strategies,function(s){return s.score;}).reverse();
     var i = 0;
     while(i< bestStrat.length && bestStrat[i].neededShips > shipsToSend)
     {
@@ -343,7 +343,8 @@ function findClosestToNeutral(neutralPlanet,planetsToAttackWith)
         neutralPlanet : neutralPlanet,
         ourPlanet : closestPlanet,
         distance : distance,
-        neededShips:neutralPlanet.ship_count+4
+        neededShips:neutralPlanet.ship_count+4,
+        score : (shipsPerUpdate*(100-estimatedTurnsBeforeShipsArrive(distance)))-neutralPlanet.ship_count+4
 
     };
     return strategy;
