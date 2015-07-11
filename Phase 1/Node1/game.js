@@ -172,3 +172,15 @@ function estimatedTurnsBeforeShipsArrive(distance)
 	var speed = 10;
 	return distance/speed;
 }
+
+function findDeathStar(list)
+{
+	return _.findWhere(list,{is_deathStar:true});
+}
+
+function addDistanceToDeathStar(list,deathStar)
+{
+	_.each(list,function(planet){
+		planet.distanceToDeathStar = calcDist(deathStar.position,planet.position);
+	});
+}
