@@ -13,7 +13,7 @@ console.log("Ships to send:" + percentage + " %");
 
 var bigBertha = {id:1, position: {x: 9,y :9},ship_count:100,size:1.8,owner:"St0ners"};
 
-var planet1 = {id:1, position: {x: 5,y :5},ship_count:50,size:1.8,owner:"St0ners"};
+var planet1 = {id:1, position: {x: 5,y :5},ship_count:50,size:3,owner:"St0ners"};
 var planet2 = {id:2, position: {x: 7,y : 7},ship_count:23,size:1.5,owner:"St0ners"};
 var planet3 = {id:3, position: {x: 2,y :2},ship_count:13,size:1.2,owner:"St0ners"};
 var planet4 = {id:4, position: {x: 3,y : 3},ship_count:55,size:1.8,owner:"St0ners"};
@@ -53,6 +53,9 @@ console.log(weakestPlanet(planets,bigBertha));
 console.log("Number of ships during travel:");
 console.log("Ships before:"+planet1.ship_count);
 console.log("ships after:"+numberOfShipsAfterAttackArrival(bigBertha,planet1));
+
+console.log("best planets to attack with:");
+console.log(bestNplanetsToAttackWith(planets,2));
 
 function calcDist(pos1,pos2)
 {
@@ -189,10 +192,36 @@ function addDistanceToDeathStar(list,deathStar)
 	});
 }
 
+function NplanetsNearbyDeathStarSortedByCost(planets,N){
+	var nearby = _.sortBy(planets,function(planet){return planet.distanceToDeathStar;}).slice(0,N);
+	return _.sortBy(nearby,function(planet){return planet.cost});
+
+}
+
 function numberOfShipsAfterAttackArrival(attacker,objective)
 {
 	var distance = calcDist(attacker.position,objective.position);
 	var turns = estimatedTurnsBeforeShipsArrive(distance);
 	var shipsPerTurn = shipsPerUpdate(objective.size);
 	return Math.ceil((turns*shipsPerTurn)+objective.ship_count);
+}
+
+function bestNplanetsToAttackWith(planets,N)
+{
+	var minimumNumberOfShipsToAttack = 10;
+	var planetsWithEnoughShips = _.where(planets,function(planet){return planet.ship_count > minimumNumberOfShipsToAttack});
+
+	if(planetsWithEnoughShips)
+	{
+		var planetsInOrder = _.sortBy(planetsWithEnoughShips,function(planet){return planet.ship_count;}).reverse();
+		planetsInOrder = planetsInOrder.slice(0,planetsInOrder.length/2);
+		var planetsInSizeOrder = _.sortBy(planetsInOrder,function(planet){return planet.size;}).reverse();
+		if(planetsInSizeOrder && planetsInSizeOrder.length > N)
+		{
+			return planetsInSizeOrder.slice(0,N);
+		}
+		else
+			return planetsInSizeOrder;
+	}
+	return [];
 }
