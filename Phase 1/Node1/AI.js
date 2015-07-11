@@ -1,6 +1,7 @@
-﻿// Set your team name here!!!
-var name = "Bot";
+﻿var name = "St0ners";
 var game;
+
+var helpers = require("./helpers");
 
 var set_game = function (obj) {
   game = obj;
@@ -8,11 +9,12 @@ var set_game = function (obj) {
 
 var update = function (game_objects) {
   console.log("update");
+  helpers.parseGameObject(game_objects);
 };
 
 var set_name = function () {
   console.log("Setting Name");
-  game.set_name("St0ners");
+  game.set_name(name);
 };
 
 module.exports = {

@@ -3,8 +3,14 @@
   "version": "0.0.0",
   "description": "Node",
   "main": "app.js",
+  "scripts": {
+    "start" : "node app.js 8888"
+  },
   "author": {
     "name": "Carapas",
     "email": ""
+  },
+  "dependencies": {
+    "underscore":"*"
   }
 }
