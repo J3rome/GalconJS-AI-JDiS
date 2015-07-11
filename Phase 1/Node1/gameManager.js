@@ -4,6 +4,14 @@ var theGame;
 
 // Average speed of Ships : 0.0017708072818430304 dist/ms
 
+var updateCount = 0;
+
+var minimalRayon = 5;
+
+var phase = 0;
+
+var lastAttacked;
+
 module.exports = gameManager = {
     init: function(gameObject, myName) {
         teamName = myName;
@@ -17,10 +25,35 @@ module.exports = gameManager = {
     },
 
     attackStrategy: function(parsedGame){
-        var shipsCount = 1;
-        console.log("Attacking '"+parsedGame.enemiesPlanets[0].owner+"' from '"+parsedGame.myPlanets[0].owner+"' with '"+shipsCount+"'.");
-        this.attack(parsedGame.myPlanets[0].id, parsedGame.enemiesPlanets[0].id, shipsCount);
-        this.attack(parsedGame.myPlanets[0].id, parsedGame.neutralPlanets[0].id, shipsCount);
+
+        parsedGame.neutralPlanets = setCostForNeutralPlanets(parsedGame.neutralPlanets);
+
+        if(phase == 0){
+            console.log("Phase 0");
+            var current = ourStrongestPlanet(parsedGame.myPlanets);
+
+            var planetByDistance = sortPlanetsByDistanceToPos(parsedGame.neutralPlanets, current.position);
+
+            var toAttack = getFisrtNlowestCost(planetByDistance, 2);
+
+            if(parsedGame.myPlanets.length < 2){
+                //calcDist(planetByDistance[0].position, current.position) < minimalRayon){
+
+
+
+                lastAttacked = planetByDistance[0];
+                _.each(toAttack, function(attackIt){
+                    gameManager.attack(current.id, attackIt.id, attackIt.ship_count + 5);
+                });
+            }else if(parsedGame.myPlanets.length == 3){
+                console.log("++phase");
+                phase++;
+            }
+        }else if(phase == 1){
+            console.log("Phase 1");
+        }
+
+        updateCount++;
     },
 
     parseGameObject: function (updatedGame) {
@@ -104,4 +137,39 @@ function calcDist(pos1,pos2)
     var y = pos1.y - pos2.y;
 
     return Math.sqrt((y*y)+(x*x));
+}
+
+function setCostForNeutralPlanets(planets) {
+    //nombre minimal de updates que ca va prendre pour
+    //regagner le nombre de ships investis pour conquerir une planete
+
+    _.each(planets, function (planet) {
+        planet.cost = planet.ship_count / shipsPerUpdate(planet.size);
+    });
+
+    return planets;
+}
+
+function sortPlanetsByDistanceToPos(planets,pos)
+{
+    return _.sortBy(planets,function(planet){return calcDist(planet.position,pos)});
+}
+
+function ourStrongestPlanet(ourPlanets)
+{
+    return _.max(ourPlanets,function(planet){ return planet.ship_count});
+}
+
+function shipsPerUpdate(size)
+{
+    return ((5*size)-3);
+}
+
+function getById(list, id){
+    return _.findWhere(list,{id:id});
+}
+
+function getFisrtNlowestCost(list, N)
+{
+    return _.sortBy(list.slice(0,N),function(obj){return obj.cost});
 }

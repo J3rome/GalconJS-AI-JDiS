@@ -137,7 +137,7 @@ function isAttackingMe(enemyShipsArray,allPlanets,teamName)
 	_.each(enemyShipsArray,function(enemyShips){
 		console.log("Ships:");
 		console.log(enemyShips);
-		var attackingPlanet = _.where(allPlanets,{id:enemyShips.target})[0];
+		var attackingPlanet = _.findWhere(allPlanets,{id:enemyShips.target});
 		console.log("Target:");
 		console.log(attackingPlanet);
 		console.log("teamname:"+teamName);
