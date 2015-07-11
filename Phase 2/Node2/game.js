@@ -307,5 +307,4 @@ function findEnnemysToAttack(shipsToSpend,enemyShips)
     });
 
     return attackStrategy;
-
 }
