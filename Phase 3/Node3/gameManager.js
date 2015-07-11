@@ -13,8 +13,6 @@ var nbShipToAttack;
 var nbShipForDeathstar;
 var nbShipToExpand;
 
-var magicRatio = 0.45
-
 var nbToKeep = 5;
 
 // Average speed of Ships : 0.0017708072818430304 dist/ms
@@ -38,6 +36,7 @@ module.exports = gameManager = {
 
     attackStrategy: function(parsedGame){
 
+        console.log("You Suck ! --> 420 Blaze it");
         var toAttack;
 
         var myTotalShips = 0;
@@ -75,7 +74,6 @@ module.exports = gameManager = {
             }
 
         }else if(phase == 1){
-            console.log("Phase 1");
             //var current = ourStrongestPlanet(parsedGame.myPlanets);
             //var weakestEnemies = weakestPlanet(parsedGame.enemiesPlanets, current);
             //var shipCount = current.ship_count/2;
@@ -83,7 +81,6 @@ module.exports = gameManager = {
 
             if(updateCount < 300 || parsedGame.enemiesPlanets.length > 3) {
                 // Expanding
-                console.log("NbShipToExpand : "+ nbShipToExpand);
                 var toExpand = expandStrategie(parsedGame.myPlanets, parsedGame.neutralPlanets, nbShipToExpand);
                 if (toExpand) {
                     gameManager.attack(toExpand.ourPlanet.id, toExpand.neutralPlanet.id, toExpand.neededShips);
@@ -482,7 +479,6 @@ function handleDeathStar(parsedGame)
 
     if(deathStarInfo.deathstar.owner != teamName)
     {
-        console.log("Ennemi has deathstar ! Charge : "+deathStarInfo.deathstar.deathstar_charge + "shipCount :"+deathStarInfo.deathstar.ship_count);
         if(deathStarInfo.deathstar.deathstar_charge >= 0.35)
         {
             // FIX SHIP TO SEND
