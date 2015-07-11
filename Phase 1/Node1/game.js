@@ -11,12 +11,14 @@ console.log("distance: "+dist);
 var percentage = percentageToSend(20,5);
 console.log("Ships to send:" + percentage + " %");
 
-var planet1 = {id:1, position: {x: 5,y :5},ship_count:50};
-var planet2 = {id:2, position: {x: 7,y : 7},ship_count:23};
-var planet3 = {id:3, position: {x: 2,y :2},ship_count:13};
-var planet4 = {id:4, position: {x: 3,y : 3},ship_count:55};
+var planet1 = {id:1, position: {x: 5,y :5},ship_count:50,size:1.8,owner:"St0ners"};
+var planet2 = {id:2, position: {x: 7,y : 7},ship_count:23,size:1.5,owner:"St0ners"};
+var planet3 = {id:3, position: {x: 2,y :2},ship_count:13,size:1.2,owner:"St0ners"};
+var planet4 = {id:4, position: {x: 3,y : 3},ship_count:55,size:1.8,owner:"St0ners"};
 
 var planets = [planet1,planet2,planet3,planet4];
+
+var attackingShips1 = {id:1,position: {x: 10,y : 10},ship_count:20,target:1};
 
 var nearestId = nearestPlanetToPosition(planets,p1);
 
@@ -27,8 +29,21 @@ var strongestPlanet = ourStrongestPlanet(planets);
 console.log("Our strongest planet is: "+strongestPlanet.id+" with "+ strongestPlanet.ship_count+ " ships");
 
 
-console.log("planets sorted by distance to (1,1):");
+/*console.log("planets sorted by distance to (1,1):");
 console.log(sortPlanetsByDistanceToPos(planets,p1));
+
+console.log("Add cost for neutral planets:");
+console.log(setCostForNeutralPlanets(planets));
+
+console.log("Ships left after attacking planet:");
+console.log("planet: ");
+console.log(planet1);
+console.log("ships: ");
+console.log(attackingShips1);
+console.log("Ships left: "+shipsLeftAfterEnnemyAttack(attackingShips1,planets));*/
+
+console.log("isAttackingMe:");
+console.log(isAttackingMe([attackingShips1],planets,"St0ners"));
 
 function calcDist(pos1,pos2)
 {
@@ -99,8 +114,56 @@ function setCostForNeutralPlanets(planets) {
 	//regagner le nombre de ships investis pour conquerir une planete
 
 	_.each(planets, function (planet) {
-		planet.cost = planet.ship_count / shipsPerUpdate(planet.ship_count);
+		planet.cost = planet.ship_count / shipsPerUpdate(planet.size);
 	});
 
 	return planets;
+}
+
+function shipsLeftAfterEnnemyAttack(ships,allPlanets)
+{
+	var attackedPlanet = _.where(allPlanets,{id:ships.target});
+	/*console.log("ShipsLeftAfterEnnemyAttack.planet = ");
+	console.log(attackedPlanet[0].ship_count);
+	console.log("attacker ship count");
+	console.log(ships.ship_count);*/
+	return attackedPlanet[0].ship_count - ships.ship_count;
+}
+
+
+function isAttackingMe(enemyShipsArray,allPlanets,teamName)
+{
+	var ennemyShipsAttackingUs = [];
+	_.each(enemyShipsArray,function(enemyShips){
+		console.log("Ships:");
+		console.log(enemyShips);
+		var attackingPlanet = _.where(allPlanets,{id:enemyShips.target})[0];
+		console.log("Target:");
+		console.log(attackingPlanet);
+		console.log("teamname:"+teamName);
+		if(attackingPlanet.owner == teamName )
+		{
+			console.log("WARNINGG");
+			var dist = calcDist(enemyShips.position,attackingPlanet.position);
+			var minShipsToDefend = attackingPlanet.ship_count - enemyShips.ship_count + 1;
+			var attack = {
+				shipsId: enemyShips.id,
+				planetId: attackingPlanet.id,
+				distance: dist,
+				updatesBeforeArrival: estimatedTurnsBeforeShipsArrive(dist),
+				shipsNeededToDefend: minShipsToDefend
+			}
+			ennemyShipsAttackingUs.push(attack);
+		}
+		else{
+			console.log("OUFF");
+		}
+	})
+	return ennemyShipsAttackingUs;
+}
+
+function estimatedTurnsBeforeShipsArrive(distance)
+{
+	var speed = 10;
+	return distance/speed;
 }
