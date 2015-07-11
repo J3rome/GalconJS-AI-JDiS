@@ -6,12 +6,16 @@ var gameManager;
 var minimalToAttack = 10;
 
 var nbPlanetAttackRatio = 0.5;
-var attackRatio = 1/2;
-var expandRatio = 1/6;
+var attackRatio = 1/6;
+var expandRatio = 3/6;
 var deathstarRatio = 1/6;
 var nbShipToAttack;
 var nbShipForDeathstar;
 var nbShipToExpand;
+
+var magicRatio = 0.45
+
+var nbToKeep = 5;
 
 // Average speed of Ships : 0.0017708072818430304 dist/ms
 
@@ -42,6 +46,8 @@ module.exports = gameManager = {
            myTotalShips += planet.ship_count;
         });
 
+        console.log()
+
         nbOfOurPlanetAttacking = parseInt((parsedGame.myPlanets.length * nbPlanetAttackRatio)+0.5);
 
         if(nbOfOurPlanetAttacking == 0)
@@ -55,8 +61,6 @@ module.exports = gameManager = {
 
         addDistanceToDeathStar(parsedGame.allPlanets, parsedGame.myPlanets);
 
-        console.log(parsedGame.myPlanets);
-
         if(phase == 0){
             console.log("Phase 0");
             var current = ourStrongestPlanet(parsedGame.myPlanets);
@@ -68,7 +72,7 @@ module.exports = gameManager = {
             if(parsedGame.myPlanets.length < 2){
                 //calcDist(planetByDistance[0].position, current.position) < minimalRayon){
                 _.each(toAttack, function(attackIt){
-                    gameManager.attack(current.id, attackIt.id, attackIt.ship_count + 5);       // FIX PHASE 3
+                    gameManager.attack(current.id, attackIt.id, attackIt.ship_count + 5);
                 });
                 phase++;
             }/*else if(parsedGame.myPlanets.length == 3){
@@ -82,18 +86,26 @@ module.exports = gameManager = {
             //var shipCount = current.ship_count/2;
             //gameManager.attack(current.id, planets.id,shipCount);
 
-            handleDeathStar(parsedGame);
-
-            // Expanding
-            var toExpand = expandStrategie(parsedGame.myPlanets, parsedGame.neutralPlanets, nbShipToExpand);
-            if(toExpand) {
-                gameManager.attack(toExpand.ourPlanet.id, toExpand.neutralPlanet.id, toExpand.neededShips);
+            if(updateCount < 300 || parsedGame.enemiesPlanets.length > 3) {
+                // Expanding
+                console.log("NbShipToExpand : "+ nbShipToExpand);
+                var toExpand = expandStrategie(parsedGame.myPlanets, parsedGame.neutralPlanets, nbShipToExpand);
+                if (toExpand) {
+                    gameManager.attack(toExpand.ourPlanet.id, toExpand.neutralPlanet.id, toExpand.neededShips);
+                    nbShipToExpand -= toExpand.neededShips;
+                }
+            }else{
+                console.log("Not expanding");
+                nbShipToAttack += nbShipToExpand;
+                nbShipToExpand = 0;
             }
+
+            handleDeathStar(parsedGame);
 
 
             // Get DeathStar infos
 
-            var attackerIndex = 0;
+           /* var attackerIndex = 0;
             var attackers = bestNplanetsToAttackWith(parsedGame.myPlanets, nbOfOurPlanetAttacking,minimalToAttack);
 
             // Get infos if someone is attacking us
@@ -104,30 +116,46 @@ module.exports = gameManager = {
 
                 while(!isDead && attackerIndex < attackers.length) {
                     if(attackers[attackerIndex].ship_count > (toAttack.ship_count + 2 + minimalToAttack) ){
-                        gameManager.attack(attackers[attackerIndex].id, toAttack.planetId, toAttack.ship_count + 2);    // FIX PHASE 3
+                        gameManager.attack(attackers[attackerIndex].id, toAttack.planetId, toAttack.ship_count + 2);
                         attackerIndex++;
                         isDead = true;
-                        nbShipToAttack -= toAttack.ship_count + 2;  // FIX PHASE 3
+                        nbShipToAttack -= toAttack.ship_count + 2;
                     }else{
                         gameManager.attack(attackers[attackerIndex].id, toAttack.planetId, toAttack.ship_count + 2 - minimalToAttack/2);    // FIX PHASE 3
                         attackerIndex++;
-                        nbShipToAttack -= toAttack.ship_count + 2 - minimalToAttack/2;  // FIX PHASE 3
+                        nbShipToAttack -= toAttack.ship_count + 2 - minimalToAttack/2;
                     }
                 }
 
                 // Someone is attacking us, decide weither we defend or we attack the enemie
-            });
+            });*/
 
-            attackerIndex = 0;
-            attackers = bestNplanetsToAttackWith(parsedGame.myPlanets, nbOfOurPlanetAttacking,minimalToAttack);
+            var attackerIndex = 0;
+            var attackers = bestNplanetsToAttackWith(parsedGame.myPlanets, nbOfOurPlanetAttacking,minimalToAttack);
 
+            var enemiesToAttack = findEnemy(attackers, parsedGame.enemiesPlanets);
+
+            if(enemiesToAttack){
+                gameManager.attack(enemiesToAttack.planet1.id, enemiesToAttack.destroy.id, enemiesToAttack.planet1.ship_count - nbToKeep);
+                if(enemiesToAttack.planet2) {
+                    gameManager.attack(enemiesToAttack.planet2.id, enemiesToAttack.destroy.id, enemiesToAttack.planet2.ship_count - nbToKeep);
+                }
+            }else{
+                console.log("NO ENNEMIES RETURNED !");
+            }
+
+/*
                 // Nobody Attacking, we choose the best target to attack
                 var enemiesToAttack = findEnnemysToAttack(parsedGame.enemiesPlanets, nbShipToAttack);
 
+            console.log("Attacking "+enemiesToAttack.length+" ennemies");
+
                 _.each(enemiesToAttack, function(enemie){
+                    console.log("Attacking a new target");
                     var isDead = false;
 
                     while(!isDead && attackerIndex < attackers.length){
+                        console.log("Attacking Same Target !");
                         if(attackers[attackerIndex].ship_count > (enemie.shipsToSend + minimalToAttack) ){
                             gameManager.attack(attackers[attackerIndex].id, enemie.planetId, enemie.shipsToSend);
                             attackerIndex++;
@@ -137,7 +165,7 @@ module.exports = gameManager = {
                             attackerIndex++;
                         }
                     }
-                });
+                });*/
 
                 // NbShipToSend is 0
 
@@ -266,7 +294,7 @@ function getFisrtNlowestCost(list, N)
     return _.sortBy(noDeathStar.slice(0,N),function(obj){return obj.cost});
 }
 
-function weakestPlanet(planets,ourStrongestPlanet)
+/*function weakestPlanet(planets,ourStrongestPlanet)
 {
     //En premier on sort les plannetes pour avoir les plus proches en premier
     var closestPlanets = sortPlanetsByDistanceToPos(planets,ourStrongestPlanet.position);
@@ -276,14 +304,14 @@ function weakestPlanet(planets,ourStrongestPlanet)
     var weakPlanetShips = 9999;
     for(var i=0;i<closestPlanets.length;i++)
     {
-        if(!closestPlanets[i].is_deathstar && closestPlanets[i].ship_count < weakPlanetShips)       // FIX PHASE 3
+        if(!closestPlanets[i].is_deathstar && closestPlanets[i].ship_count < weakPlanetShips)
         {
             weakPlanet = closestPlanets[i];
-            weakPlanetShips = weakPlanet.ship_count;                                        // FIX PHASE 3
+            weakPlanetShips = weakPlanet.ship_count;
         }
     }
     return weakPlanet;
-}
+}*/
 
 function defendPlanet(attackArray,ourPlanets)
 {
@@ -293,15 +321,15 @@ function defendPlanet(attackArray,ourPlanets)
     })
 }
 
-function shipsLeftAfterEnnemyAttack(ships,allPlanets)
+/*function shipsLeftAfterEnnemyAttack(ships,allPlanets)
 {
     var attackedPlanet = _.where(allPlanets,{id:ships.target});
-    /*console.log("ShipsLeftAfterEnnemyAttack.planet = ");
+    /!*console.log("ShipsLeftAfterEnnemyAttack.planet = ");
      console.log(attackedPlanet[0].ship_count);
      console.log("attacker ship count");
-     console.log(ships.ship_count);*/
-    return attackedPlanet[0].ship_count - ships.ship_count;         // FIX PHASE 3
-}
+     console.log(ships.ship_count);*!/
+    return attackedPlanet[0].ship_count - ships.ship_count;
+}*/
 
 
 function isAttackingMe(enemyShipsArray,allPlanets)
@@ -348,16 +376,16 @@ function addDistanceToDeathStar(list,deathStar)
     });
 }
 
-function defendOrAttack(enemiesPlanets, planetToDefend, defendCost){
+/*function defendOrAttack(enemiesPlanets, planetToDefend, defendCost){
     var toAttack = planetToDefend;
     _.each(enemiesPlanets, function(enemiePlanet){
-        if(enemiePlanet.ship_count < defendCost && enemiePlanet.ship_count < toAttack.ship_count){      // FIX PHASE 3
+        if(enemiePlanet.ship_count < defendCost && enemiePlanet.ship_count < toAttack.ship_count){
             toAttack =  enemiePlanet;
         }
     });
 
     return toAttack;
-}
+}*/
 
 function findDeathStar(list)
 {
@@ -416,8 +444,19 @@ function findEnnemysToAttack(enemiePlanets, myShipCount)
             };
             attackStrategy.push(strategy);
             shipsLeft = shipsLeft - strategy.shipsToSend;
+        }else{
+            console.log("NOT ENOUGH SHIP ON PLANET TO ATTACK !");
         }
     });
+
+    if(attackStrategy.length == 0){
+        var strategy =
+        {
+            planetId : sortedBySize[0].id,
+            shipsToSend : sortedBySize[0].ship_count + 5     // FIX PHASE 3
+        };
+        attackStrategy.push(strategy)
+    }
 
     return attackStrategy;
 }
@@ -449,10 +488,10 @@ function handleDeathStar(parsedGame)
     if(deathStarInfo.deathstar.owner != teamName)
     {
         console.log("Ennemi has deathstar ! Charge : "+deathStarInfo.deathstar.deathstar_charge + "shipCount :"+deathStarInfo.deathstar.ship_count);
-        if(deathStarInfo.deathstar.deathstar_charge >= 0.35 || deathStarInfo.deathstar.ship_count < 20)     // FIX PHASE 3
+        if(deathStarInfo.deathstar.deathstar_charge >= 0.35)
         {
-            var shipsToSend = deathStarInfo.deathstar.ship_count +                                          // FIX PHASE 3
-                (shipsPerUpdate(deathStarInfo.deathstar.size)*(7-deathStarInfo.deathstar.deathstar_charge))+
+            // FIX SHIP TO SEND
+            var shipsToSend = (shipsPerUpdate(deathStarInfo.deathstar.size)*(7-deathStarInfo.deathstar.deathstar_charge))+
                 deathStarInfo.enemyShipsIncoming - deathStarInfo.friendlyShipsIncoming;
 
             var isDead = false;
@@ -480,17 +519,17 @@ function handleDeathStar(parsedGame)
         }
     }else {
     //deathStar is ours!
-        if(deathStarInfo.deathstar.deathstar_charge >= 7)
+        if(deathStarInfo.deathstar.deathstar_charge >= 1)
         {
-            var enemyStrongestPlanet = getEnemyStrongestPlanet(parsedGame.enemiesPlanets);
+            var enemyStrongestPlanet = getEnemyBiggestPlanet(parsedGame.enemiesPlanets);
             theGame.deathstar_destroy_planet(deathStarInfo.deathstar.id, enemyStrongestPlanet.id);
         }
     }
 }
 
-function getEnemyStrongestPlanet(enemyPlanets)
+function getEnemyBiggestPlanet(enemyPlanets)
 {
-    return _.max(enemyPlanets,function(planet){ return planet.ship_count});         // FIX PHASE 3
+    return _.max(enemyPlanets,function(planet){ return planet.size});
 }
 
 function expandStrategie(planetsToAttackWith,neutralPlanets,shipsToSend)
@@ -532,4 +571,51 @@ function findClosestToNeutral(neutralPlanet,planetsToAttackWith)
 
     };
     return strategy;
+}
+
+function findEnemy(planetsToAttackWith,enemyPlanets)
+{
+    if(planetsToAttackWith.length == 0){
+        return;
+    }
+    var weaponsInOrder = _.sortBy(planetsToAttackWith,function(planet){return planet.ship_count;}).reverse();
+    var strategy;
+
+    if(weaponsInOrder.length > 1) {
+        var p1 = weaponsInOrder[0].position;
+        var p2 = weaponsInOrder[1].position;
+        var x = ((p1.x + p2.x) / 2) + p1.x;
+        var y = ((p1.y + p2.y) / 2) + p1.y;
+        var point = {x: x, y: y};
+
+
+        strategy =
+        {
+            planet1: weaponsInOrder[0],
+            planet2: weaponsInOrder[1],
+            destroy: findClosestTo(enemyPlanets, point)
+        };
+    }else{
+        strategy =
+        {
+            planet1: weaponsInOrder[0],
+            destroy: findClosestTo(enemyPlanets, weaponsInOrder[0].position)
+        };
+    }
+
+    return strategy;
+
+}
+
+function findClosestTo(enemyPlanets, point) {
+    var distance = 9999;
+    var closestPlanet;
+    _.each(enemyPlanets, function (planet) {
+        var tmp = calcDist(planet.position, point);
+        if (tmp < distance) {
+            distance = tmp;
+            closestPlanet = planet;
+        }
+    });
+    return closestPlanet;
 }
