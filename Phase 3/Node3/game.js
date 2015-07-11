@@ -309,7 +309,7 @@ function findEnnemysToAttack(shipsToSpend,enemyShips)
     return attackStrategy;
 }
 
-function expandStrategie(planetsToAttackWith,neutralPlanets)
+function expandStrategie(planetsToAttackWith,neutralPlanets,shipsToSend)
 {
     var strategies = [];
 	_.each(neutralPlanets,function(neutral){
@@ -317,8 +317,13 @@ function expandStrategie(planetsToAttackWith,neutralPlanets)
 	});
 
     var bestStrat = _.sortBy(strategies,function(s){return s.ship_count;});
+    var i = 0;
+    while(i< bestStrat.length && bestStrat[i].neededShips > shipsToSend)
+    {
+        i++;
+    }
 
-    return bestStrat[0];
+    return bestStrat[i];
 }
 
 function findClosestToNeutral(neutralPlanet,planetsToAttackWith)
@@ -338,7 +343,7 @@ function findClosestToNeutral(neutralPlanet,planetsToAttackWith)
         neutralPlanet : neutralPlanet,
         ourPlanet : closestPlanet,
         distance : distance,
-        neededShips:neutralPlanet.ship_count
+        neededShips:neutralPlanet.ship_count+4
 
     };
     return strategy;
