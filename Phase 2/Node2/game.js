@@ -59,6 +59,9 @@ console.log("ships after:"+numberOfShipsAfterAttackArrival(bigBertha,planet1));
 console.log("best planets to attack with:");
 console.log(bestNplanetsToAttackWith(planets,2));
 
+console.log("planets to attack:");
+console.log(findEnnemysToAttack(75,planets));
+
 function calcDist(pos1,pos2)
 {
 	var x = pos1.x - pos2.x;
@@ -281,4 +284,28 @@ function bestNplanetsToAttackWith(planets,N)
 			return planetsInSizeOrder;
 	}
 	return [];
+}
+
+function findEnnemysToAttack(shipsToSpend,enemyShips)
+{
+    var sortedBySize = _.sortBy(enemyShips,function(enemy){return enemy.size;}).reverse();
+    var attackStrategy = [];
+    var shipsLeft = shipsToSpend;
+
+
+    _.each(sortedBySize,function(planet){
+        if(planet.ship_count < shipsLeft)
+        {
+            var strategy =
+            {
+                planetId : planet.id,
+                ships : planet.ship_count + 5
+            };
+            attackStrategy.push(strategy);
+            shipsLeft = shipsLeft - strategy.ships;
+        }
+    });
+
+    return attackStrategy;
+
 }
