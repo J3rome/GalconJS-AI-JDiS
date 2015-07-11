@@ -70,10 +70,11 @@ module.exports = gameManager = {
                 _.each(toAttack, function(attackIt){
                     gameManager.attack(current.id, attackIt.id, attackIt.ship_count + 5);       // FIX PHASE 3
                 });
-            }else if(parsedGame.myPlanets.length == 3){
+                phase++;
+            }/*else if(parsedGame.myPlanets.length == 3){
                 console.log("++phase");
                 phase++;
-            }
+            }*/
         }else if(phase == 1){
             console.log("Phase 1");
             //var current = ourStrongestPlanet(parsedGame.myPlanets);
@@ -85,10 +86,9 @@ module.exports = gameManager = {
 
             // Expanding
             var toExpand = expandStrategie(parsedGame.myPlanets, parsedGame.neutralPlanets, nbShipToExpand);
-            console.log("DLDLD");
-            console.log(toExpand);
-            console.log("----");
+            if(toExpand) {
                 gameManager.attack(toExpand.ourPlanet.id, toExpand.neutralPlanet.id, toExpand.neededShips);
+            }
 
 
             // Get DeathStar infos
@@ -376,7 +376,7 @@ function addDistanceToDeathStar(allPlanet, myPlanets)
 
 function bestNplanetsToAttackWith(planets,N, minimumNumberOfShipsToAttack)
 {
-    var planetsWithEnoughShips = _.reject(planets,function(planet){return planet.ship_count < minimumNumberOfShipsToAttack});
+    var planetsWithEnoughShips = _.reject(planets,function(planet){return planet.ship_count < minimumNumberOfShipsToAttack && !planet.is_deathstar});
 
     if(planetsWithEnoughShips)
     {
@@ -495,13 +495,12 @@ function getEnemyStrongestPlanet(enemyPlanets)
 
 function expandStrategie(planetsToAttackWith,neutralPlanets,shipsToSend)
 {
-    console.log("Expanding");
     var strategies = [];
     _.each(neutralPlanets,function(neutral){
         strategies.push(findClosestToNeutral(neutral,planetsToAttackWith));
     });
 
-    var bestStrat = _.sortBy(strategies,function(s){return s.ship_count;});
+    var bestStrat = _.sortBy(strategies,function(s){return s.score;}).reverse();
     var i = 0;
     while(i< bestStrat.length && bestStrat[i].neededShips > shipsToSend)
     {
@@ -528,7 +527,8 @@ function findClosestToNeutral(neutralPlanet,planetsToAttackWith)
         neutralPlanet : neutralPlanet,
         ourPlanet : closestPlanet,
         distance : distance,
-        neededShips:neutralPlanet.ship_count+4
+        neededShips:neutralPlanet.ship_count+4,
+        score : (shipsPerUpdate*(100-estimatedTurnsBeforeShipsArrive(distance)))-neutralPlanet.ship_count+4
 
     };
     return strategy;
