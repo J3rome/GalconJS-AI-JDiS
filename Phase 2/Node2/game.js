@@ -2,6 +2,8 @@ var _ = require("underscore");
 
 console.log("Hello World");
 
+var teamName = "St0ners";
+
 var p1 = {x: 1,y : 1};
 var p2 = {x: 1,y : 1.5};
 var dist = calcDist(p1,p2);
@@ -182,8 +184,63 @@ function estimatedTurnsBeforeShipsArrive(distance)
 
 function findDeathStar(list)
 {
-	return _.findWhere(list,{is_deathStar:true});
+    return _.findWhere(list,{is_deathStar:true});
 }
+
+function getDeathStarInfo(planets,ships)
+{
+    var deathStar = findDeathStar(list);
+
+    var enemyShipsAttackingDeathStar = _.find(ships,function(ship){return (ship.target == deathStar.id && ship.owner != teamName)});
+    var friendlyShipsAttackingDeathStar = _.find(ships,function(ship){return (ship.target == deathStar.id && ship.owner == teamName)});
+    var totalEnemyShips = 0;
+    _.each(enemyShipsAttackingDeathStar,function(ship){ totalEnemyShips += ship.ship_count;});
+    var totalFriendly = 0;
+    _.each(friendlyShipsAttackingDeathStar,function(ship){ totalFriendly += ship.ship_count;});
+
+    var info = {
+        deathStar : deathStar,
+        enemyShipsIncoming:totalEnemyShips,
+        friendlyShipsIncoming:totalFriendly
+    };
+}
+
+function handleDeathStar(allPlanets, ships)
+{
+    var deathStarInfo = getDeathStarInfo(allPlanets,ships);
+
+    if(deathStarInfo.deathstar.owner != teamName)
+    {
+        if(deathStarInfo.deathStar.deathstar_charge >= 3 || deathStarInfo.deathStar.ship_count < 20)
+        {
+            var shipsToSend = deathStarInfo.deathstar.ship_count +
+                (shipsPerUpdate(deathStarInfo.deathstar.size)*(7-deathStarInfo.deathstar.deathstar_charge))+
+                    deathStarInfo.enemyShipsIncoming - deathStarInfo.friendlyShipsIncoming;
+
+            //ATTACK WITH SHIPS!
+        }
+    }
+    else//deathStar is ours!
+    {
+        if(deathStarInfo.deathStar.deathstar_charge >= 7)
+        {
+            var enemyStrongestPlanet = getEnemyStrongestPlanet(enemyPlanets);
+            //attack planet
+        }
+        if(deathStarInfo.enemyShipsIncoming != 0 )
+        {
+            //attack with more ships than incoming.
+        }
+    }
+
+}
+
+function getEnemyStrongestPlanet(enemyPlanets)
+{
+    return _.max(enemyPlanets,function(planet){ return planet.ship_count});
+
+}
+
 
 function addDistanceToDeathStar(list,deathStar)
 {
