@@ -40,7 +40,7 @@ function calcDist(pos1,pos2)
 
 function shipsPerUpdate(size)
 {
-	return (5*(size-3));
+	return ((5*size)-3);
 }
 
 function percentageToSend(planetShips,ShipsToSend)
@@ -94,3 +94,13 @@ function sortPlanetsByDistanceToPos(planets,pos)
 	return _.sortBy(planets,function(planet){return calcDist(planet.position,pos)});
 }
 
+function setCostForNeutralPlanets(planets) {
+	//nombre minimal de updates que ca va prendre pour
+	//regagner le nombre de ships investis pour conquerir une planete
+
+	_.each(planets, function (planet) {
+		planet.cost = planet.ship_count / shipsPerUpdate(planet.ship_count);
+	});
+
+	return planets;
+}
