@@ -349,3 +349,37 @@ function findClosestToNeutral(neutralPlanet,planetsToAttackWith)
     };
     return strategy;
 }
+
+function findEnemy(planetsToAttackWith,enemyPlanets)
+{
+    var weaponsInOrder = _.sortBy(planetsToAttackWith,function(planet){return planet.ship_count;}).revert();
+
+    var p1 = weaponsInOrder[0].position;
+    var p2 = weaponsInOrder[1].position;
+    var x = ((p1.x + p2.x)/2)+p1.x;
+    var y = ((p1.y + p2.y)/2)+p1.y;
+    var point = {x:x,y:y};
+
+    var strategy =
+    {
+        planet1 : weaponsInOrder[0],
+        planet2 : weaponsInOrder[1],
+        destroy: findClosestTo(enemyPlanets,point)
+    };
+
+    return strategy;
+
+}
+
+function findClosestTo(point,enemyPlanets) {
+    var distance = 9999;
+    var closestPlanet;
+    _.each(enemyPlanets, function (planet) {
+        var tmp = calcDist(planet.position, point);
+        if (tmp < distance) {
+            distance = tmp;
+            closestPlanet = planet;
+        }
+    });
+    return closestPlanet;
+}
