@@ -11,3 +11,7 @@
 node_modules/
 
 output_log.txt
+
+*.zip
+
+GalconJDIs_Data/

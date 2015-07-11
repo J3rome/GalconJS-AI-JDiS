@@ -2,7 +2,7 @@ var _ = require("underscore");
 var teamName;
 var theGame;
 
-module.exports = {
+module.exports = gameManager = {
     init: function(gameObject, myName) {
         teamName = myName;
         theGame = gameObject;
@@ -14,6 +14,12 @@ module.exports = {
         }
     },
 
+    attackStrategy: function(parsedGame){
+        var shipsCount = 1;
+        console.log("Attacking '"+parsedGame.enemiesPlanets[0].owner+"' from '"+parsedGame.myPlanets[0].owner+"' with '"+shipsCount+"'.");
+        this.attack(parsedGame.myPlanets[0].id, parsedGame.enemiesPlanets[0].id, shipsCount);
+    },
+
     parseGameObject: function (updatedGame) {
         var parsedGame = {
             myShips: [],
@@ -21,7 +27,8 @@ module.exports = {
             enemiesShips: [],
             myPlanets: [],
             neutralPlanets: [],
-            enemiesPlanets: []
+            enemiesPlanets: [],
+            allPlanets: []
         };
 
         if (updatedGame) {
@@ -78,6 +85,8 @@ module.exports = {
                     } else {
                         parsedGame.enemiesPlanets.push(planet);
                     }
+
+                    parsedGame.allPlanets.push(planet);
                 });
             }
         }
