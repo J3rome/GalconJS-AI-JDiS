@@ -440,7 +440,8 @@ function handleDeathStar(parsedGame)
 
     if(deathStarInfo.deathstar.owner != teamName)
     {
-        if(deathStarInfo.deathstar.deathstar_charge >= 3 || deathStarInfo.deathstar.ship_count < 20)
+        console.log("Ennemi has deathstar ! Charge : "+deathStarInfo.deathstar.deathstar_charge + "shipCount :"+deathStarInfo.deathstar.ship_count);
+        if(deathStarInfo.deathstar.deathstar_charge >= 0.35 || deathStarInfo.deathstar.ship_count < 20)
         {
             var shipsToSend = deathStarInfo.deathstar.ship_count +
                 (shipsPerUpdate(deathStarInfo.deathstar.size)*(7-deathStarInfo.deathstar.deathstar_charge))+
@@ -457,26 +458,26 @@ function handleDeathStar(parsedGame)
                     isDead = true;
                     nbShipForDeathstar -= shipsToSend;
                 }else{
-                    gameManager.attack(attackers[attackerIndex].id, deathStarInfo.deathstar.id, shipsToSend - minimalToAttack/2);
+                    var send;
+                    if(attackers[attackerIndex].ship_count < shipsToSend - minimalToAttack/2){
+                        send = attackers[attackerIndex].ship_count - minimalToAttack/2;
+                    }else{
+                        send = shipsToSend - minimalToAttack/2;
+                    }
+                    gameManager.attack(attackers[attackerIndex].id, deathStarInfo.deathstar.id, send);
                     attackerIndex++;
                     nbShipForDeathstar -= shipsToSend - minimalToAttack/2;
                 }
             }
         }
+    }else {
+    //deathStar is ours!
+        if(deathStarInfo.deathstar.deathstar_charge >= 7)
+        {
+            var enemyStrongestPlanet = getEnemyStrongestPlanet(parsedGame.enemiesPlanets);
+            theGame.deathstar_destroy_planet(deathStarInfo.deathstar.id, enemyStrongestPlanet.id);
+        }
     }
-    /*else//deathStar is ours!
-    {
-        if(deathStarInfo.deathStar.deathstar_charge >= 7)
-        {
-            var enemyStrongestPlanet = getEnemyStrongestPlanet(enemyPlanets);
-            //attack planet
-        }
-        if(deathStarInfo.enemyShipsIncoming != 0 )
-        {
-            //attack with more ships than incoming.
-        }
-    }*/
-
 }
 
 function getEnemyStrongestPlanet(enemyPlanets)
