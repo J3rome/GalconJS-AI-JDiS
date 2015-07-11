@@ -1,16 +1,16 @@
 ﻿var name = "St0ners";
 var game;
 
-var helpers = require("./helpers");
+var gameManager = require("./gameManager");
 
 var set_game = function (obj) {
     game = obj;
-    helpers.init(name);
+    gameManager.init(game, name);
 }
 
 var update = function (game_objects) {
     console.log("update");
-    helpers.parseGameObject(game_objects);
+    gameManager.parseGameObject(game_objects);
 };
 
 var set_name = function () {

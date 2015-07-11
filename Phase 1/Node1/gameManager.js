@@ -1,11 +1,20 @@
 var _ = require("underscore");
 var teamName;
+var theGame;
 
 module.exports = {
-    init: function (myName) {
+    init: function(gameObject, myName) {
         teamName = myName;
+        theGame = gameObject;
     },
-    parseGameObject: function (game) {
+
+    attack: function(from, to, count){
+        if(from && to && count) {
+            theGame.attack_planet(from, to, count);
+        }
+    },
+
+    parseGameObject: function (updatedGame) {
         var parsedGame = {
             myShips: [],
             neutralShips: [],       // DOESNT EXIST !
@@ -15,9 +24,9 @@ module.exports = {
             enemiesPlanets: []
         };
 
-        if (game) {
-            if (game.ships) {
-                _.each(game.ships, function (ship) {
+        if (updatedGame) {
+            if (updatedGame.ships) {
+                _.each(updatedGame.ships, function (ship) {
                     if (ship.position) {
                         ship.position.x = parseFloat(ship.position.x);
                         ship.position.y = parseFloat(ship.position.y);
@@ -37,8 +46,8 @@ module.exports = {
                 });
             }
 
-            if (game.planets) {
-                _.each(game.planets, function (planet) {
+            if (updatedGame.planets) {
+                _.each(updatedGame.planets, function (planet) {
                     if (planet.position) {
                         planet.position.x = parseFloat(planet.position.x);
                         planet.position.y = parseFloat(planet.position.y);
