@@ -1,12 +1,18 @@
 var _ = require("underscore");
-
+var myTeam;
 
 module.exports = {
+    init: function(myName){
+        teamName = myName;
+    },
   parseGameObject : function(game){
         var parsedGame = {
             myShips: [],
+            neutralShips: [],       // DOESNT EXIST !
+            enemiesShips: [],
             myPlanets: [],
-            neutralPlanets: []
+            neutralPlanets: [],
+            enemiesPlanets: []
         };
 
       if(game){
@@ -16,8 +22,17 @@ module.exports = {
                       ship.position.x = parseFloat(ship.position.x);
                       ship.position.y = parseFloat(ship.position.y);
                   }
+
                   if(ship.ship_count){
                       ship.ship_count = parseInt(ship.ship_count);
+                  }
+
+                  if(ship.owner == teamName){
+                      parsedGame.myShips.push(ship);
+                  }else if(ship.owner == "") {
+                      parsedGame.neutralShips.push(ship);
+                  }else {
+                      parsedGame.enemiesShips.push(ship);
                   }
               });
           }
@@ -46,10 +61,18 @@ module.exports = {
                   if(planet.size){
                       planet.size = parseFloat(planet.size);
                   }
+
+                  if(planet.owner == teamName){
+                      parsedGame.myPlanets.push(planet);
+                  }else if(planet.owner == "") {
+                      parsedGame.neutralPlanets.push(planet);
+                  }else {
+                      parsedGame.enemiesPlanets.push(planet);
+                  }
               });
           }
       }
 
-      console.log(game);
+      return parsedGame;
   }
 };

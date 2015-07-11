@@ -5,6 +5,7 @@ var helpers = require("./helpers");
 
 var set_game = function (obj) {
   game = obj;
+    helpers.init(name);
 }
 
 var update = function (game_objects) {
