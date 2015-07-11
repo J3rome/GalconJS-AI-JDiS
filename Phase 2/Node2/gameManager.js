@@ -9,6 +9,9 @@ var nbPlanetAttackRatio = 0.5;
 var attackRatio = 1/2;
 var expandRatio = 1/6;
 var deathstarRatio = 1/6;
+var nbShipToAttack;
+var nbShipForDeathstar;
+var nbShipToExpand;
 
 // Average speed of Ships : 0.0017708072818430304 dist/ms
 
@@ -44,6 +47,10 @@ module.exports = gameManager = {
         if(nbOfOurPlanetAttacking == 0)
             nbOfOurPlanetAttacking = 1;
 
+        nbShipToAttack = parseInt(myTotalShips*attackRatio);      // nb ship alloue a l'attaque
+        nbShipForDeathstar = parseInt(myTotalShips*deathstarRatio);      // nb ship alloue a l'attaque de la deathstar
+        nbShipToExpand = parseInt(myTotalShips*expandRatio);      // nb ship alloue a pour l<expand
+
         parsedGame.neutralPlanets = setCostForNeutralPlanets(parsedGame.neutralPlanets);
 
         addDistanceToDeathStar(parsedGame.allPlanets, parsedGame.myPlanets);
@@ -74,12 +81,9 @@ module.exports = gameManager = {
             //var shipCount = current.ship_count/2;
             //gameManager.attack(current.id, planets.id,shipCount);
 
-            handleDeathStar(parsedGame.allPlanets, parsedGame.allShips);
+            handleDeathStar(parsedGame);
 
             // Get DeathStar infos
-
-
-            var nbShipToSend = parseInt(myTotalShips*attackRatio);      // nb ship alloue a l'attaque
 
             var attackerIndex = 0;
             var attackers = bestNplanetsToAttackWith(parsedGame.myPlanets, nbOfOurPlanetAttacking,minimalToAttack);
@@ -95,11 +99,11 @@ module.exports = gameManager = {
                         gameManager.attack(attackers[attackerIndex].id, toAttack.planetId, toAttack.ship_count + 2);
                         attackerIndex++;
                         isDead = true;
-                        nbShipToSend -= toAttack.ship_count + 2;
+                        nbShipToAttack -= toAttack.ship_count + 2;
                     }else{
-                        gameManager.attack(attackers[attackerIndex].id, toAttack.planetId, toAttack.ship_count + 2 - minimalToAttack);
+                        gameManager.attack(attackers[attackerIndex].id, toAttack.planetId, toAttack.ship_count + 2 - minimalToAttack/2);
                         attackerIndex++;
-                        nbShipToSend -= toAttack.ship_count + 2 - minimalToAttack;
+                        nbShipToAttack -= toAttack.ship_count + 2 - minimalToAttack/2;
                     }
                 }
 
@@ -110,7 +114,7 @@ module.exports = gameManager = {
             attackers = bestNplanetsToAttackWith(parsedGame.myPlanets, nbOfOurPlanetAttacking,minimalToAttack);
 
                 // Nobody Attacking, we choose the best target to attack
-                var enemiesToAttack = findEnnemysToAttack(parsedGame.enemiesPlanets, nbShipToSend);
+                var enemiesToAttack = findEnnemysToAttack(parsedGame.enemiesPlanets, nbShipToAttack);
 
                 _.each(enemiesToAttack, function(enemie){
                     var isDead = false;
@@ -121,7 +125,7 @@ module.exports = gameManager = {
                             attackerIndex++;
                             isDead = true;
                         }else{
-                            gameManager.attack(attackers[attackerIndex].id, enemie.planetId, attackers[attackerIndex].ship_count - minimalToAttack);
+                            gameManager.attack(attackers[attackerIndex].id, enemie.planetId, attackers[attackerIndex].ship_count - minimalToAttack/2);
                             attackerIndex++;
                         }
                     }
@@ -364,7 +368,7 @@ function addDistanceToDeathStar(allPlanet, myPlanets)
 
 function bestNplanetsToAttackWith(planets,N, minimumNumberOfShipsToAttack)
 {
-    var planetsWithEnoughShips = _.reject(planets,function(planet){return planet.ship_count < minimumNumberOfShipsToAttack && planet.is_deathstar});
+    var planetsWithEnoughShips = _.reject(planets,function(planet){return planet.ship_count < minimumNumberOfShipsToAttack});
 
     if(planetsWithEnoughShips)
     {
@@ -387,9 +391,9 @@ function bestNplanetsToAttackWith(planets,N, minimumNumberOfShipsToAttack)
     return [];
 }
 
-function findEnnemysToAttack(nemyPlanets, myShipCount)
+function findEnnemysToAttack(enemiePlanets, myShipCount)
 {
-    var sortedBySize = _.sortBy(nemyPlanets,function(enemy){return enemy.size;}).reverse();
+    var sortedBySize = _.sortBy(enemiePlanets,function(enemy){return enemy.size;}).reverse();
     var attackStrategy = [];
     var shipsLeft = myShipCount;
 
@@ -412,7 +416,7 @@ function findEnnemysToAttack(nemyPlanets, myShipCount)
 
 function getDeathStarInfo(planets,ships)
 {
-    var deathStar = findDeathStar(list);
+    var deathStar = findDeathStar(planets);
 
     var enemyShipsAttackingDeathStar = _.find(ships,function(ship){return (ship.target == deathStar.id && ship.owner != teamName)});
     var friendlyShipsAttackingDeathStar = _.find(ships,function(ship){return (ship.target == deathStar.id && ship.owner == teamName)});
@@ -422,10 +426,12 @@ function getDeathStarInfo(planets,ships)
     _.each(friendlyShipsAttackingDeathStar,function(ship){ totalFriendly += ship.ship_count;});
 
     var info = {
-        deathStar : deathStar,
+        deathstar : deathStar,
         enemyShipsIncoming:totalEnemyShips,
         friendlyShipsIncoming:totalFriendly
     };
+
+    return info;
 }
 
 function handleDeathStar(parsedGame)
@@ -434,7 +440,7 @@ function handleDeathStar(parsedGame)
 
     if(deathStarInfo.deathstar.owner != teamName)
     {
-        if(deathStarInfo.deathStar.deathstar_charge >= 3 || deathStarInfo.deathStar.ship_count < 20)
+        if(deathStarInfo.deathstar.deathstar_charge >= 3 || deathStarInfo.deathstar.ship_count < 20)
         {
             var shipsToSend = deathStarInfo.deathstar.ship_count +
                 (shipsPerUpdate(deathStarInfo.deathstar.size)*(7-deathStarInfo.deathstar.deathstar_charge))+
@@ -444,20 +450,18 @@ function handleDeathStar(parsedGame)
             var attackerIndex = 0;
             var attackers = bestNplanetsToAttackWith(parsedGame.myPlanets, nbOfOurPlanetAttacking,minimalToAttack);
 
-            while(!isDead && attackerIndex < attackers.length) {
-                if(attackers[attackerIndex].ship_count > (toAttack.ship_count + 2 + minimalToAttack) ){
-                    gameManager.attack(attackers[attackerIndex].id, toAttack.planetId, toAttack.ship_count + 2);
+            while(!isDead && attackerIndex < attackers.length && nbShipForDeathstar > 0) {
+                if(attackers[attackerIndex].ship_count > (shipsToSend + minimalToAttack) ){
+                    gameManager.attack(attackers[attackerIndex].id, deathStarInfo.deathstar.id, shipsToSend);
                     attackerIndex++;
                     isDead = true;
-                    nbShipToSend -= toAttack.ship_count + 2;
+                    nbShipForDeathstar -= shipsToSend;
                 }else{
-                    gameManager.attack(attackers[attackerIndex].id, toAttack.planetId, toAttack.ship_count + 2 - minimalToAttack);
+                    gameManager.attack(attackers[attackerIndex].id, deathStarInfo.deathstar.id, shipsToSend - minimalToAttack/2);
                     attackerIndex++;
-                    nbShipToSend -= toAttack.ship_count + 2 - minimalToAttack;
+                    nbShipForDeathstar -= shipsToSend - minimalToAttack/2;
                 }
             }
-
-            //ATTACK WITH SHIPS!
         }
     }
     /*else//deathStar is ours!
