@@ -196,3 +196,71 @@ function weakestPlanet(planets,ourStrongestPlanet)
     }
     return weakPlanet;
 }
+
+function defendPlanet(attackArray,ourPlanets)
+{
+    _.each(attackArray,function(attack){
+        var ourBestPlanet = ourStrongestPlanet(ourPlanets);
+        gameManager.attack(ourBestPlanet.id,attack.planetId,attack.shipsNeededToDefend);
+    })
+}
+
+function shipsLeftAfterEnnemyAttack(ships,allPlanets)
+{
+    var attackedPlanet = _.where(allPlanets,{id:ships.target});
+    /*console.log("ShipsLeftAfterEnnemyAttack.planet = ");
+     console.log(attackedPlanet[0].ship_count);
+     console.log("attacker ship count");
+     console.log(ships.ship_count);*/
+    return attackedPlanet[0].ship_count - ships.ship_count;
+}
+
+
+function isAttackingMe(enemyShipsArray,allPlanets,teamName)
+{
+    var ennemyShipsAttackingUs = [];
+    _.each(enemyShipsArray,function(enemyShips){
+        console.log("Ships:");
+        console.log(enemyShips);
+        var attackingPlanet = _.findWhere(allPlanets,{id:enemyShips.target});
+        console.log("Target:");
+        console.log(attackingPlanet);
+        console.log("teamname:"+teamName);
+        if(attackingPlanet.owner == teamName )
+        {
+            console.log("WARNINGG");
+            var dist = calcDist(enemyShips.position,attackingPlanet.position);
+            var minShipsToDefend = attackingPlanet.ship_count - enemyShips.ship_count + 1;
+            var attack = {
+                shipsId: enemyShips.id,
+                planetId: attackingPlanet.id,
+                distance: dist,
+                updatesBeforeArrival: estimatedTurnsBeforeShipsArrive(dist),
+                shipsNeededToDefend: minShipsToDefend
+            }
+            ennemyShipsAttackingUs.push(attack);
+        }
+        else{
+            console.log("OUFF");
+        }
+    })
+    return ennemyShipsAttackingUs;
+}
+
+function estimatedTurnsBeforeShipsArrive(distance)
+{
+    var speed = 10;
+    return distance/speed;
+}
+
+function findDeathStar(list)
+{
+    return _.findWhere(list,{is_deathStar:true});
+}
+
+function addDistanceToDeathStar(list,deathStar)
+{
+    _.each(list,function(planet){
+        planet.distanceToDeathStar = calcDist(deathStar.position,planet.position);
+    });
+}
