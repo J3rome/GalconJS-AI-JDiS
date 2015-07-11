@@ -11,6 +11,8 @@ console.log("distance: "+dist);
 var percentage = percentageToSend(20,5);
 console.log("Ships to send:" + percentage + " %");
 
+var bigBertha = {id:1, position: {x: 9,y :9},ship_count:100,size:1.8,owner:"St0ners"};
+
 var planet1 = {id:1, position: {x: 5,y :5},ship_count:50,size:1.8,owner:"St0ners"};
 var planet2 = {id:2, position: {x: 7,y : 7},ship_count:23,size:1.5,owner:"St0ners"};
 var planet3 = {id:3, position: {x: 2,y :2},ship_count:13,size:1.2,owner:"St0ners"};
@@ -44,6 +46,9 @@ console.log("Ships left: "+shipsLeftAfterEnnemyAttack(attackingShips1,planets));
 
 console.log("isAttackingMe:");
 console.log(isAttackingMe([attackingShips1],planets,"St0ners"));
+
+console.log("weakest planet:");
+console.log(weakestPlanet(planets,bigBertha));
 
 function calcDist(pos1,pos2)
 {
