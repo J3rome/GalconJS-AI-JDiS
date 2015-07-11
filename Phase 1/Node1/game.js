@@ -11,16 +11,20 @@ console.log("distance: "+dist);
 var percentage = percentageToSend(20,5);
 console.log("Ships to send:" + percentage + " %");
 
-var planet1 = {id:1, position: {x: 5,y :5}};
-var planet2 = {id:2, position: {x: 7,y : 7}};
-var planet3 = {id:3, position: {x: 2,y :2}};
-var planet4 = {id:4, position: {x: 3,y : 3}};
+var planet1 = {id:1, position: {x: 5,y :5},ship_count:50};
+var planet2 = {id:2, position: {x: 7,y : 7},ship_count:23};
+var planet3 = {id:3, position: {x: 2,y :2},ship_count:13};
+var planet4 = {id:4, position: {x: 3,y : 3},ship_count:55};
 
 var planets = [planet1,planet2,planet3,planet4];
 
 var nearestId = nearestPlanetToPosition(planets,p1);
 
 console.log('nearest planet id:'+ nearestId.id);
+
+var strongestPlanet = ourStrongestPlanet(planets);
+
+console.log("Our strongest planet is: "+strongestPlanet.id+" with "+ strongestPlanet.ship_count+ " ships");
 
 function calcDist(pos1,pos2)
 {
@@ -55,3 +59,14 @@ function nearestPlanetToPosition(planets,pos)
 	});
 	return closestPlanet;
 }
+
+function ourStrongestPlanet(ourPlanets)
+{
+	return _.max(ourPlanets,function(planet){ return planet.ship_count});
+}
+
+function weakestPlanet(planets)
+{
+
+}
+
