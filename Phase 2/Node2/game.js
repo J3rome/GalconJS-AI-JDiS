@@ -50,6 +50,10 @@ console.log(isAttackingMe([attackingShips1],planets,"St0ners"));
 console.log("weakest planet:");
 console.log(weakestPlanet(planets,bigBertha));
 
+console.log("Number of ships during travel:");
+console.log("Ships before:"+planet1.ship_count);
+console.log("ships after:"+numberOfShipsAfterAttackArrival(bigBertha,planet1));
+
 function calcDist(pos1,pos2)
 {
 	var x = pos1.x - pos2.x;
@@ -183,4 +187,12 @@ function addDistanceToDeathStar(list,deathStar)
 	_.each(list,function(planet){
 		planet.distanceToDeathStar = calcDist(deathStar.position,planet.position);
 	});
+}
+
+function numberOfShipsAfterAttackArrival(attacker,objective)
+{
+	var distance = calcDist(attacker.position,objective.position);
+	var turns = estimatedTurnsBeforeShipsArrive(distance);
+	var shipsPerTurn = shipsPerUpdate(objective.size);
+	return Math.ceil((turns*shipsPerTurn)+objective.ship_count);
 }
