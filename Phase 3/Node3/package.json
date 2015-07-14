@@ -1,15 +1,20 @@
 {
-  "name": "Node",
-  "version": "0.0.0",
-  "description": "Node",
+  "name": "GalcoJDiS AI - 2015",
+  "version": "0.0.1",
+  "description": "Ai for a modified version of the strategy game galcon",
   "main": "app.js",
   "scripts": {
-    "start" : "node app.js 8888"
+    "start" : "node app.js 8888",
+    "vs" : "node app.js 8889"
   },
   "author": {
-    "name": "Carapas",
-    "email": ""
+    "name": "Jerome Abdelnour",
+    "email": "jerome.abdelnour@usherbrooke.ca"
   },
+  "contributors": [{
+    "name": "Paulo Unia",
+    "email": "p.unia@usherbrooke.ca"
+  }],
   "dependencies": {
     "underscore":"*"
   }
